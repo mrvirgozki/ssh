@@ -14,7 +14,7 @@ PINK='\033[38;5;201m'
 YELLOW='\033[1;33m'
 
 echo ""
-echo -e "  ${BOLD}${CYAN}WELCOME TO VIRGOZKI SSH-WS DEPLOYER SCRIPT v2.3${RESET}"
+echo -e "  ${BOLD}${CYAN}WELCOME TO VIRGOZKISSH-WS DEPLOYER SCRIPT v2.3${RESET}"
 echo ""
 
 PROJECT_ID=$(gcloud config get-value project 2>/dev/null | tr -d '[:space:]')
@@ -120,7 +120,7 @@ echo ""
 
 echo -e "  ${PINK}[+] GENERATING DEPLOYMENT FILES...${RESET}"
 
-# --- 1. GENERATED NEW BANNER AS REQUESTED ---
+# --- 1. Generate banner.txt with Raw ASCII Escape Characters ---
 printf "\x1b[1;97m⡋⣡⣴⣶⣶⡀⠄⠄⠙⢿⣿⣿⣿⣿⣿⣴⣿⣿⣿⢃⣤⣄⣀⣥⣿\x1b[0m\r\n" > banner.txt
 printf "\x1b[1;97m⢸⣇⠻⣿⣿⣿⣧⣀⢀⣠⡌⢻⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿\x1b[0m\r\n" >> banner.txt
 printf "\x1b[1;97m⢸⣿⣷⣤⣤⣤⣬⣙⣛⢿⣿⣿⣿⣿⣿⣿⡿⣿⣿⡍⠄⠄⢀⣤⣄⠉\x1b[0m\r\n" >> banner.txt
@@ -145,7 +145,7 @@ printf "\x1b[1;31m▓  ❌ NO TORRENT/P2P   ❌ NO DDOS/ATTACKS    ❌ NO ABUSE 
 printf "\x1b[1;31m▓  ⚠️  ALL ACTIVITIES ARE MONITORED - BAN FOR MISUSE            ▓\x1b[0m\r\n" >> banner.txt
 printf "\x1b[1;36m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\x1b[0m\r\n" >> banner.txt
 
-# --- 2. Generate entrypoint.sh - FIXED WEBSOCKET HANDSHAKE ---
+# --- 2. Generate entrypoint.sh ---
 cat << 'EOF' > entrypoint.sh
 #!/bin/bash
 set -e
@@ -160,6 +160,7 @@ echo "[+] Starting SSH Daemon..."
 /usr/sbin/sshd
 
 echo "[+] Starting BadVPN UDPGW (tuned for high-throughput gaming UDP)..."
+
 badvpn-udpgw \
   --listen-addr 127.0.0.1:7300 \
   --max-clients 1000 \
@@ -169,13 +170,12 @@ UDPGW_PID=$!
 
 echo "[+] Creating Optimized WS-to-TCP Bridge..."
 cat << 'PYEOF' > /tmp/bridge.py
-import socket, threading, hashlib, base64
+import socket, threading
 
-BUF_SIZE = 65536
-WS_MAGIC = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+BUF_SIZE = 65536  # bigger buffer = fewer syscalls, higher throughput
 
 def tune_socket(sock):
-    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)  # kill Nagle-induced latency
     try:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1 << 20)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1 << 20)
@@ -198,19 +198,8 @@ def bridge(src, dst):
 def handle(client):
     try:
         tune_socket(client)
-        req = client.recv(4096).decode('utf-8', errors='ignore')
-        key_line = [l for l in req.split('\r\n') if l.lower().startswith('sec-websocket-key:')]
-        if not key_line:
-            client.close()
-            return
-        ws_key = key_line[0].split(':',1)[1].strip().encode()
-        accept_key = base64.b64encode(hashlib.sha1(ws_key + WS_MAGIC).digest())
-        client.sendall(
-            b"HTTP/1.1 101 Switching Protocols\r\n"
-            b"Upgrade: websocket\r\n"
-            b"Connection: Upgrade\r\n"
-            b"Sec-WebSocket-Accept: " + accept_key + b"\r\n\r\n"
-        )
+        client.recv(4096)
+        client.sendall(b"HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n")
         ssh = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tune_socket(ssh)
         ssh.connect(('127.0.0.1', 22))
@@ -231,13 +220,14 @@ PYEOF
 python3 /tmp/bridge.py &
 BRIDGE_PID=$!
 
-echo "[+] Starting Watchdog..."
+echo "[+] Starting Watchdog (auto-restarts sshd/udpgw/bridge if any crash)..."
 (
   while true; do
     sleep 10
     if ! kill -0 "$UDPGW_PID" 2>/dev/null; then
       echo "[watchdog] udpgw died, restarting..."
-      badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 1000 --max-connections-for-client 40 --loglevel warning &
+      badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 1000 \
+        --max-connections-for-client 40 --loglevel warning &
       UDPGW_PID=$!
     fi
     if ! kill -0 "$BRIDGE_PID" 2>/dev/null; then
@@ -257,7 +247,7 @@ exec nginx -g "daemon off;"
 EOF
 chmod +x entrypoint.sh
 
-# --- 3. Generate nginx.conf - FIXED PATH /virgozki, NO CONFLICTING HEADERS ---
+# --- 3. Generate nginx.conf ---
 cat << 'EOF' > nginx.conf
 worker_processes auto;
 events {
@@ -273,6 +263,16 @@ http {
     sendfile off;
     keepalive_timeout 3600;
 
+    map $http_sec_websocket_key $ws_key {
+        default $http_sec_websocket_key;
+        ""      "S2w0eVY4bTBRN3pQNjFqWA==";
+    }
+
+    map $http_sec_websocket_version $ws_version {
+        default $http_sec_websocket_version;
+        ""      "13";
+    }
+
     map $http_upgrade $connection_upgrade {
         default upgrade;
         '' close;
@@ -287,6 +287,8 @@ http {
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection $connection_upgrade;
+            proxy_set_header Sec-WebSocket-Key $ws_key;
+            proxy_set_header Sec-WebSocket-Version $ws_version;
             proxy_set_header Host $host;
             proxy_read_timeout 86400s;
             proxy_send_timeout 86400s;
@@ -302,7 +304,7 @@ http {
 }
 EOF
 
-# --- 4. Generate Dockerfile - USER/PASS UPDATED TO virgozki ---
+# --- 4. Generate Dockerfile ---
 cat << 'EOF' > Dockerfile
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
@@ -321,6 +323,7 @@ RUN useradd -m -s /bin/bash virgozki && echo 'virgozki:virgozki' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
+# Configure SSH Banner settings safely via standard SSH config
 RUN sed -i 's/#DebianBanner yes/DebianBanner no/' /etc/ssh/sshd_config || true
 RUN echo "DebianBanner no" >> /etc/ssh/sshd_config
 RUN echo "VersionAddendum _Tectia-SSH_9.5_NVIDIA-RTX-PRO-6000-Blackwell" >> /etc/ssh/sshd_config
@@ -335,6 +338,7 @@ RUN { \
     echo "Compression no"; \
     } >> /etc/ssh/sshd_config
 
+# Copy raw binary ANSI banner file into SSH directory
 COPY banner.txt /etc/ssh/banner.txt
 RUN echo "Banner /etc/ssh/banner.txt" >> /etc/ssh/sshd_config
 
@@ -346,7 +350,7 @@ EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]
 EOF
 
-echo -e "  ${CYAN}BUILDING IMAGE...${RESET}"
+echo -e "  ${CYAN}BUILDING IMAGE  BUILD...${RESET}"
 gcloud builds submit --tag "gcr.io/${PROJECT_ID}/${SERVICE_NAME}" --project="$PROJECT_ID"
 if [ $? -ne 0 ]; then
     echo -e "  ${MAGENTA}BUILD FAILED.${RESET}"
@@ -364,10 +368,9 @@ deploy_attempt() {
 }
 
 echo -e "  ${CYAN}DEPLOYING SSH SERVER HOST TO ${REGION}...${RESET}"
-# REMOVED CONFLICTING --session-affinity FLAG
-if deploy_attempt "$CPU" "$RAM" "$MAX_INSTANCES" "$CONCURRENCY" "--no-cpu-throttling --cpu-boost --execution-environment gen2 --min-instances 1"; then
+if deploy_attempt "$CPU" "$RAM" "$MAX_INSTANCES" "$CONCURRENCY" "--no-cpu-throttling --cpu-boost --session-affinity --execution-environment gen2 --min-instances 1"; then
     FINAL_CPU="$CPU"; FINAL_RAM="$RAM"
-elif deploy_attempt 1 512Mi 2 150 "--no-cpu-throttling --min-instances 1"; then
+elif deploy_attempt 1 512Mi 2 150 "--no-cpu-throttling --session-affinity --min-instances 1"; then
     FINAL_CPU="1"; FINAL_RAM="512Mi"
 elif deploy_attempt 1 512Mi 2 100 "--min-instances 0"; then
     FINAL_CPU="1"; FINAL_RAM="512Mi"
@@ -386,17 +389,15 @@ echo -e "  ${GREEN} DEPLOYED SSH SUCCESSFULLY${RESET}"
 echo ""
 echo -e "  ${CYAN}SERVICE      ${GREEN}${SERVICE_NAME}${RESET}"
 echo -e "  ${CYAN}RAW HOST     ${GREEN}${CLEAN_HOST}${RESET}"
-echo -e "  ${CYAN}SERVER HOST  ${GREEN}${SERVICE_URL}${RESET}"
+echo -e "  ${CYAN}SERVER HOST          ${GREEN}${SERVICE_URL}${RESET}"
 echo -e "  ${CYAN}BUILD USED   ${GREEN}${FINAL_CPU} vCPU : ${FINAL_RAM}${RESET}"
 echo -e "  ${CYAN}User/Pass:   ${GREEN}virgozki : virgozki${RESET}"
-echo -e "  ${CYAN}PATH:        ${GREEN}/virgozki${RESET}"
 echo ""
 
 cleanup() {
-    echo -e "\n  ${PINK}CLEANING UP LOCAL BUILD FILES...${RESET}"
+    echo -e "\n  ${PINK}CLEANING UP LOCAL BUILD LOGS AND GENERATED FILES...${RESET}"
     rm -f banner.txt entrypoint.sh nginx.conf Dockerfile
     echo -e "  ${CYAN}DEPLOYER SESSION CLOSED.${RESET}\n"
 }
 
 cleanup
-
