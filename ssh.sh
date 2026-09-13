@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==============================================================================
 # 
-# WELCOME TO CXLVINSSH-WS DEPLOYER SCRIPT v2.3
+# WELCOME TO VIRGOZKISSH-WS DEPLOYER SCRIPT v2.3
 # 
 # ==============================================================================
 BOLD='\033[1m'; RESET='\033[0m'; NC='\033[0m'
@@ -14,7 +14,7 @@ PINK='\033[38;5;201m'
 YELLOW='\033[1;33m'
 
 echo ""
-echo -e "  ${BOLD}${CYAN}WELCOME TO CXLVINSSH-WS DEPLOYER SCRIPT v2.3${RESET}"
+echo -e "  ${BOLD}${CYAN}WELCOME TO VIRGOZKISSH-WS DEPLOYER SCRIPT v2.3${RESET}"
 echo ""
 
 PROJECT_ID=$(gcloud config get-value project 2>/dev/null | tr -d '[:space:]')
@@ -31,8 +31,8 @@ gcloud services enable cloudbuild.googleapis.com artifactregistry.googleapis.com
 echo -e "  ${MAGENTA}==================================================${NC}"
 echo -e "  ${GREEN}                 SERVICE NAME${NC}"
 echo -e "  ${MAGENTA}==================================================${NC}"
-read -r -p "$(echo -e "  ${CYAN}SERVICE NAME [cxlvin]: ${RESET}")" INPUT_NAME
-SERVICE_NAME=${INPUT_NAME:-cxlvin}
+read -r -p "$(echo -e "  ${CYAN}SERVICE NAME [virgozki]: ${RESET}")" INPUT_NAME
+SERVICE_NAME=${INPUT_NAME:-virgozki}
 echo ""
 
 echo -e "  ${MAGENTA}==================================================${NC}"
@@ -121,9 +121,29 @@ echo ""
 echo -e "  ${PINK}[+] GENERATING DEPLOYMENT FILES...${RESET}"
 
 # --- 1. Generate banner.txt with Raw ASCII Escape Characters ---
-printf "\x1b[1;36m====================================================\x1b[0m\r\n" > banner.txt
-printf "\x1b[1;35mcxlvinssh: \x1b[1;32mno torrent, no ddos, no abuse \x1b[1;33m👌🏼\x1b[0m\r\n" >> banner.txt
-printf "\x1b[1;36m====================================================\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⡋⣡⣴⣶⣶⡀⠄⠄⠙⢿⣿⣿⣿⣿⣿⣴⣿⣿⣿⢃⣤⣄⣀⣥⣿\x1b[0m\r\n" > banner.txt
+printf "\x1b[1;97m⢸⣇⠻⣿⣿⣿⣧⣀⢀⣠⡌⢻⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⢸⣿⣷⣤⣤⣤⣬⣙⣛⢿⣿⣿⣿⣿⣿⣿⡿⣿⣿⡍⠄⠄⢀⣤⣄⠉\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⣖⣿⣿⣿⣿⣿⣿⣿⣿⣿⢿⣿⣿⣿⣿⣿⢇⣿⣿⡷⠶⠶⢿⣿⣿⠇⢀\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣽⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⣷⣶⣥⣴\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⣦⣌⣛⣻⣿⣿⣧⠙⠛⠛⡭⠅⠒⠦⠭⣭⡻⣿⣿⣿⣿⣿⣿⣿⣿⡿⠃⠄\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⣿⣿⣿⣿⣿⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠄⠹⠈⢋⣽⣿⣿⣿⣿⣵⣾\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⣿⣿⣿⣿⣿⣿⣿⣿⠄⣴⣿⣶⣄⠄⣴⣶⠄⢀⣾⣿⣿⣿⣿⣿⣿⠃⠄⠄\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⠈⠻⣿⣿⣿⣿⣿⣿⡄⢻⣿⣿⣿⠄⣿⣿⡀⣾⣿⣿⣿⣿⣛⠛⠁\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⠄⠄⠈⠛⢿⣿⣿⣿⠁⠞⢿⣿⣿⡄⢿⣿⡇⣸⣿⣿⠿⠛⠁⠄\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m⠄⠄⠄⠄⠄⠉⠻⣿⣿⣾⣦⡙⠻⣷⣾⣿⠃⠿⠋⠁⠄\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;36m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;35m▓                                                               ▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;97m▓       ⚡ SSH-WS + UDPGW GAMING TUNNEL SERVICE v2.3 ⚡        ▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;35m▓                                                               ▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;36m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;92m▓  ✅ LOW LATENCY      ✅ OPTIMIZED UDP       ✅ AUTO RECONNECT ▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;92m▓  ✅ NO LAG BUFFER    ✅ STABLE CONNECTION   ✅ HIGH SPEED     ▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;36m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;31m▓  ❌ NO TORRENT/P2P   ❌ NO DDOS/ATTACKS    ❌ NO ABUSE        ▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;31m▓  ⚠️  ALL ACTIVITIES ARE MONITORED - BAN FOR MISUSE            ▓\x1b[0m\r\n" >> banner.txt
+printf "\x1b[1;36m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\x1b[0m\r\n" >> banner.txt
 
 # --- 2. Generate entrypoint.sh ---
 cat << 'EOF' > entrypoint.sh
@@ -299,7 +319,7 @@ RUN git clone https://github.com/ambrop72/badvpn.git /tmp/badvpn \
     && make install && rm -rf /tmp/badvpn
 
 RUN mkdir -p /var/run/sshd
-RUN useradd -m -s /bin/bash cxlvin && echo 'cxlvin:cxlvin' | chpasswd
+RUN useradd -m -s /bin/bash cxlvin && echo 'virgozki:virgozki' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
@@ -371,7 +391,7 @@ echo -e "  ${CYAN}SERVICE      ${GREEN}${SERVICE_NAME}${RESET}"
 echo -e "  ${CYAN}RAW HOST     ${GREEN}${CLEAN_HOST}${RESET}"
 echo -e "  ${CYAN}SERVER HOST          ${GREEN}${SERVICE_URL}${RESET}"
 echo -e "  ${CYAN}BUILD USED   ${GREEN}${FINAL_CPU} vCPU : ${FINAL_RAM}${RESET}"
-echo -e "  ${CYAN}User/Pass:   ${GREEN}cxlvin : cxlvin${RESET}"
+echo -e "  ${CYAN}User/Pass:   ${GREEN}virgozki : virgozki${RESET}"
 echo ""
 
 cleanup() {
