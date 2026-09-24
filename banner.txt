@@ -1,0 +1,11 @@
++--------------------------------------------------------------+
+|                     VIRGOZKI SSH-WS                          |
+|                                                              |
+|   SSH over WebSocket  |  Cloud Run  |  Secure SSH account    |
+|                                                              |
+|   USER : virgozki                                             |
+|   PATH : /virgozki                                            |
+|                                                              |
+|   Keep this service for authorized use only.                  |
+|   No DDoS, abuse, scanning, or unauthorized access.          |
++--------------------------------------------------------------+
