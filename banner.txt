@@ -7,6 +7,7 @@
               ● NETWORK READY
 
               USER     : virgozki
+              PASS     : virgozki
               WS PATH  : /virgozki
               PLATFORM : CLOUD RUN
 
