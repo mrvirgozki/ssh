@@ -25,12 +25,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------------------------
-# BADVPN UDPGW
+# BADVPN UDPGW (✅ INAYOS NA: TINANGGAL ANG MALING CHECKOUT)
 # ------------------------------------------------------------------------------
 RUN git clone --depth 1 https://github.com/ambrop72/badvpn.git /tmp/badvpn \
-    && cd /tmp/badvpn \
-    && git checkout 07268f0b8d979678a9b944999999999999999999 \
-    && mkdir -p build && cd build \
+    && mkdir -p /tmp/badvpn/build \
+    && cd /tmp/badvpn/build \
     && cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 \
     && make -j"$(nproc)" \
     && make install \
@@ -74,7 +73,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY entrypoint.sh /entrypoint.sh
 
 # ------------------------------------------------------------------------------
-# PERMISSIONS + CONFIG VALIDATION (✅ INAYOS NA!)
+# PERMISSIONS + CONFIG VALIDATION
 # ------------------------------------------------------------------------------
 RUN chmod +x /entrypoint.sh \
     && nginx -t
