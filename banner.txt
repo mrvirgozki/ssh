@@ -1,16 +1,39 @@
 ⚡ VIRGOZKI SSH-WS ⚡
 
 
+              ✦ CLOUD SSH CONNECTION ✦
+              ✦ WEBSOCKET ACCESS READY ✦
+
+
               ● SERVER ONLINE
               ● SSH READY
               ● WEBSOCKET ACTIVE
               ● NETWORK READY
+              ● CONNECTION STABLE
+              ● CLOUD ROUTING ACTIVE
+
 
               USER     : virgozki
-              PASS     : virgozki
               WS PATH  : /virgozki
               PLATFORM : CLOUD RUN
+              SERVICE  : SSH + WEBSOCKET
 
-              ✦ SECURE CLOUD CONNECTION ✦
+
+              ✧ FAST • STABLE • SIMPLE ✧
+              ✧ CLOUD POWERED CONNECTION ✧
+
+
+              ✓ SECURE CONNECTION
+              ✓ AUTHORIZED ACCESS
+              ✓ SERVICE READY
+
+
+              ✦ VIRGOZKI CLOUD NETWORK ✦
+
 
               ⚠ AUTHORIZED USE ONLY
+              ⚠ NO ABUSE • NO ATTACKS
+              ⚠ RESPECT THE NETWORK
+
+
+                    THANK YOU & ENJOY
