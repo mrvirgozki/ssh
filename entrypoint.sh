@@ -1,16 +1,25 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
+
+# Default Cloud Run port
+export PORT="${PORT:-8080}"
 
 ulimit -n 65535 || true
 
+echo "[+] VIRGOZKI SSH-WS STARTING..."
 echo "[+] Preparing SSH host keys..."
 ssh-keygen -A
 mkdir -p /run/sshd /var/run/sshd
 
 echo "[+] Starting SSH daemon..."
 /usr/sbin/sshd
+sleep 1
+if ! pgrep -x sshd >/dev/null; then
+    echo "[✗] ERROR: Failed to start SSH server!"
+    exit 1
+fi
 
-echo "[+] Starting BadVPN UDPGW..."
+echo "[+] Starting BadVPN UDPGW on 127.0.0.1:7300..."
 badvpn-udpgw \
     --listen-addr 127.0.0.1:7300 \
     --max-clients 1000 \
@@ -58,14 +67,12 @@ def recv_http_headers(client):
 
 def websocket_handshake(client, request):
     key = None
-
     for line in request.split(b"\r\n"):
         if line.lower().startswith(b"sec-websocket-key:"):
             key = line.split(b":", 1)[1].strip().decode("ascii", "ignore")
             break
 
     if not key:
-        # Compatibility mode for simple HTTP-upgrade tunnel clients.
         response = (
             b"HTTP/1.1 101 Switching Protocols\r\n"
             b"Upgrade: websocket\r\n"
@@ -76,7 +83,6 @@ def websocket_handshake(client, request):
         accept = base64.b64encode(
             hashlib.sha1((key + WS_GUID).encode()).digest()
         ).decode()
-
         response = (
             "HTTP/1.1 101 Switching Protocols\r\n"
             "Upgrade: websocket\r\n"
@@ -84,7 +90,6 @@ def websocket_handshake(client, request):
             f"Sec-WebSocket-Accept: {accept}\r\n"
             "\r\n"
         ).encode()
-
     client.sendall(response)
 
 
@@ -112,38 +117,28 @@ def handle(client):
     ssh = None
     try:
         tune_socket(client)
-
         request = recv_http_headers(client)
         if not request:
             client.close()
             return
-
         websocket_handshake(client, request)
-
         ssh = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tune_socket(ssh)
         ssh.connect((SSH_HOST, SSH_PORT))
-
         t1 = threading.Thread(target=bridge, args=(client, ssh), daemon=True)
         t2 = threading.Thread(target=bridge, args=(ssh, client), daemon=True)
         t1.start()
         t2.start()
-
         t1.join()
         t2.join()
-
     except Exception:
         pass
     finally:
         if ssh:
-            try:
-                ssh.close()
-            except OSError:
-                pass
-        try:
-            client.close()
-        except OSError:
-            pass
+            try: ssh.close()
+            except OSError: pass
+        try: client.close()
+        except OSError: pass
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -151,7 +146,6 @@ server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 server.bind((LISTEN_HOST, LISTEN_PORT))
 server.listen(256)
-
 print(f"[bridge] listening on {LISTEN_HOST}:{LISTEN_PORT}", flush=True)
 
 while True:
@@ -162,36 +156,29 @@ PYEOF
 python3 /tmp/bridge.py &
 BRIDGE_PID=$!
 
-echo "[+] Starting watchdog..."
+echo "[+] Starting service watchdog..."
 (
     while true; do
         sleep 10
-
         if ! kill -0 "${UDPGW_PID}" 2>/dev/null; then
-            echo "[watchdog] UDPGW stopped; restarting..."
-            badvpn-udpgw \
-                --listen-addr 127.0.0.1:7300 \
-                --max-clients 1000 \
-                --max-connections-for-client 40 \
-                --loglevel warning &
+            echo "[watchdog] UDPGW crashed, restarting..."
+            badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 1000 --max-connections-for-client 40 --loglevel warning &
             UDPGW_PID=$!
         fi
-
         if ! kill -0 "${BRIDGE_PID}" 2>/dev/null; then
-            echo "[watchdog] bridge stopped; restarting..."
+            echo "[watchdog] Bridge crashed, restarting..."
             python3 /tmp/bridge.py &
             BRIDGE_PID=$!
         fi
-
         if ! pgrep -x sshd >/dev/null 2>&1; then
-            echo "[watchdog] sshd stopped; restarting..."
+            echo "[watchdog] SSHD stopped, restarting..."
             /usr/sbin/sshd
         fi
     done
 ) &
 
-echo "[+] Validating nginx..."
+echo "[+] Validating Nginx config..."
 nginx -t
 
-echo "[+] Starting nginx on Cloud Run port ${PORT:-8080}..."
+echo "[+] Starting Nginx on port ${PORT}..."
 exec nginx -g "daemon off;"
