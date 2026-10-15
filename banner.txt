@@ -11,7 +11,7 @@
   • Password    : virgozki
   • SSH Port    : 443 / 22
   • UDPGW Port  : 7300
-  • WS Path     : /virgozki-ssh
+  • WS Path     : /virgozki
 
 =====================================================
   NETWORK RULES & GUIDELINES:
