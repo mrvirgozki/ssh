@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ==============================================================================
-# VIRGOZKI SSH-WS DEPLOYER v3.0
+# VIRGOZKI SSH-WS DEPLOYER v3.0 (ALL REGIONS)
 # - Separate build files
 # - Fixes "failed to read dockerfile: open Dockerfile: no such file or directory"
 # - Uses Artifact Registry
@@ -61,21 +61,75 @@ echo
 echo -e "${MAGENTA}==============================================================${RESET}"
 echo -e "${GREEN}                        REGION${RESET}"
 echo -e "${MAGENTA}==============================================================${RESET}"
-echo "  1) us-central1"
-echo "  2) asia-east1"
-echo "  3) asia-southeast1"
-echo "  4) us-west1"
-echo "  5) us-east1"
+echo -e "${YELLOW}--- ASIA ---${RESET}"
+echo "  1) asia-east1        (Taiwan)"
+echo "  2) asia-east2        (Hong Kong)"
+echo "  3) asia-northeast1   (Tokyo, Japan)"
+echo "  4) asia-northeast2   (Osaka, Japan)"
+echo "  5) asia-northeast3   (Seoul, South Korea)"
+echo "  6) asia-south1       (Mumbai, India)"
+echo "  7) asia-south2       (Delhi, India)"
+echo "  8) asia-southeast1   (Singapore)"
+echo "  9) asia-southeast2   (Jakarta, Indonesia)"
 echo
-read -r -p "Region [1-5] (default 1): " REGION_CHOICE
+echo -e "${YELLOW}--- UNITED STATES ---${RESET}"
+echo "  10) us-central1      (Iowa)"
+echo "  11) us-east1         (South Carolina)"
+echo "  12) us-east4         (Northern Virginia)"
+echo "  13) us-east5         (Columbus)"
+echo "  14) us-south1        (Dallas)"
+echo "  15) us-west1         (Oregon)"
+echo "  16) us-west2         (Los Angeles)"
+echo "  17) us-west3         (Salt Lake City)"
+echo "  18) us-west4         (Las Vegas)"
+echo
+echo -e "${YELLOW}--- EUROPE ---${RESET}"
+echo "  19) europe-central2  (Warsaw, Poland)"
+echo "  20) europe-north1    (Finland)"
+echo "  21) europe-west1     (Belgium)"
+echo "  22) europe-west2     (London, UK)"
+echo "  23) europe-west3     (Frankfurt, Germany)"
+echo "  24) europe-west4     (Eemshaven, Netherlands)"
+echo "  25) europe-west9     (Paris, France)"
+echo
+echo -e "${YELLOW}--- OTHERS ---${RESET}"
+echo "  26) northamerica-northeast1 (Montréal, Canada)"
+echo "  27) southamerica-east1      (São Paulo, Brazil)"
+echo "  28) australia-southeast1    (Sydney, Australia)"
+echo
 
-case "${REGION_CHOICE:-1}" in
-    1) REGION="us-central1" ;;
-    2) REGION="asia-east1" ;;
-    3) REGION="asia-southeast1" ;;
-    4) REGION="us-west1" ;;
-    5) REGION="us-east1" ;;
-    *) REGION="us-central1" ;;
+read -r -p "Choose region [1-28] (default 8 - Singapore): " REGION_CHOICE
+
+case "${REGION_CHOICE:-8}" in
+    1) REGION="asia-east1" ;;
+    2) REGION="asia-east2" ;;
+    3) REGION="asia-northeast1" ;;
+    4) REGION="asia-northeast2" ;;
+    5) REGION="asia-northeast3" ;;
+    6) REGION="asia-south1" ;;
+    7) REGION="asia-south2" ;;
+    8) REGION="asia-southeast1" ;;
+    9) REGION="asia-southeast2" ;;
+    10) REGION="us-central1" ;;
+    11) REGION="us-east1" ;;
+    12) REGION="us-east4" ;;
+    13) REGION="us-east5" ;;
+    14) REGION="us-south1" ;;
+    15) REGION="us-west1" ;;
+    16) REGION="us-west2" ;;
+    17) REGION="us-west3" ;;
+    18) REGION="us-west4" ;;
+    19) REGION="europe-central2" ;;
+    20) REGION="europe-north1" ;;
+    21) REGION="europe-west1" ;;
+    22) REGION="europe-west2" ;;
+    23) REGION="europe-west3" ;;
+    24) REGION="europe-west4" ;;
+    25) REGION="europe-west9" ;;
+    26) REGION="northamerica-northeast1" ;;
+    27) REGION="southamerica-east1" ;;
+    28) REGION="australia-southeast1" ;;
+    *) REGION="asia-southeast1" ;;
 esac
 
 echo -e "${GREEN}Selected:${RESET} ${CYAN}${REGION}${RESET}"
@@ -274,4 +328,3 @@ echo -e "${GREEN}${SERVICE_URL}/virgozki${RESET}"
 echo
 echo -e "${MAGENTA}Build files kept at:${RESET}"
 echo "${BUILD_DIR}"
-echo
